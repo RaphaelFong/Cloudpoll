@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudPoll - Presenter</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f0f23;
+    color: #e0e0e0;
+    min-height: 100vh;
+  }
+  .header {
+    background: #1a1a2e;
+    border-bottom: 1px solid #333;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header a {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .header .session-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .session-code {
+    background: #667eea;
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .player-count {
+    color: #888;
+    font-size: 0.9rem;
+  }
+  .main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 32px 20px;
+  }
+
+  /* ---- CREATE FORM ---- */
+  #create-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #aaa;
+    font-size: 0.85rem;
+  }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 1rem;
+  }
+  .form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+  .question-block {
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .question-block h3 {
+    font-size: 1rem;
+    color: #667eea;
+    margin-bottom: 12px;
+  }
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .option-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .option-input-wrap input[type="text"] {
+    flex: 1;
+    padding: 8px 12px;
+    background: #16162a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+  }
+  .option-input-wrap input[type="radio"] {
+    accent-color: #667eea;
+  }
+  .correct-label {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary {
+    background: #667eea;
+    color: #fff;
+  }
+  .btn-secondary {
+    background: #333;
+    color: #e0e0e0;
+  }
+  .btn-success {
+    background: #27ae60;
+    color: #fff;
+  }
+  .btn-warning {
+    background: #e67e22;
+    color: #fff;
+  }
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  /* ---- LIVE SESSION ---- */
+  #live-section { display: none; }
+  .lobby-msg {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+    font-size: 1.1rem;
+  }
+  .lobby-msg .big-code {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #667eea;
+    letter-spacing: 4px;
+    margin: 16px 0;
+  }
+  .participants-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
+    justify-content: center;
+  }
+  .participant-chip {
+    background: #1a1a2e;
+    border: 1px solid #333;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+  }
+
+  /* ---- QUESTION DISPLAY ---- */
+  .question-display {
+    display: none;
+    text-align: center;
+  }
+  .question-display .q-number {
+    color: #667eea;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+  .question-display .q-text {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 32px;
+  }
+
+  /* ---- BAR CHART ---- */
+  .bar-chart {
+    max-width: 600px;
+    margin: 0 auto 24px;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+  .bar-label {
+    min-width: 140px;
+    text-align: right;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bar-track {
+    flex: 1;
+    height: 36px;
+    background: #1a1a2e;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.5s ease;
+    min-width: 0;
+  }
+  .bar-count {
+    min-width: 40px;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #888;
+  }
+  .bar-correct .bar-fill { background: #27ae60; }
+  .bar-wrong .bar-fill { background: #667eea; }
+  .bar-neutral .bar-fill { background: #667eea; }
+
+  .total-votes {
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+  .controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  /* ---- LEADERBOARD ---- */
+  .leaderboard {
+    display: none;
+    text-align: center;
+  }
+  .leaderboard h2 {
+    font-size: 1.8rem;
+    margin-bottom: 24px;
+  }
+  .lb-table {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .lb-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: #1a1a2e;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .lb-row.gold { border-left: 4px solid #f1c40f; }
+  .lb-row.silver { border-left: 4px solid #bdc3c7; }
+  .lb-row.bronze { border-left: 4px solid #e67e22; }
+  .lb-rank {
+    font-size: 1.2rem;
+    font-weight: 700;
+    min-width: 40px;
+    color: #888;
+  }
+  .lb-name { flex: 1; text-align: left; }
+  .lb-score {
+    font-weight: 700;
+    color: #667eea;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="/">CloudPoll</a>
+  <div class="session-info" id="session-info" style="display:none;">
+    <span class="player-count" id="player-count">0 players</span>
+    <span class="session-code" id="header-code"></span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ============ CREATE FORM ============ -->
+  <div id="create-section">
+    <h2>Create a Quiz</h2>
+    <div class="form-group">
+      <label>Quiz Title</label>
+      <input type="text" id="quiz-title" placeholder="e.g. Cloud Computing Revision" value="Cloud Computing Quiz">
+    </div>
+
+    <div id="questions-container">
+      <!-- Question blocks get added here -->
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="addQuestion()">+ Add Question</button>
+      <button class="btn btn-primary" onclick="createSession()">Create Session</button>
+    </div>
+  </div>
+
+  <!-- ============ LIVE SESSION ============ -->
+  <div id="live-section">
+    <div id="lobby-view">
+      <div class="lobby-msg">
+        <p>Share this code with your audience:</p>
+        <div class="big-code" id="lobby-code"></div>
+        <p>or go to <strong id="play-url"></strong></p>
+        <div class="participants-list" id="participants-list"></div>
+        <button class="btn btn-success" onclick="startQuiz()" style="margin-top:24px;">
+          Start Quiz
+        </button>
+      </div>
+    </div>
+
+    <div class="question-display" id="question-display">
+      <p class="q-number" id="q-number"></p>
+      <p class="q-text" id="q-text"></p>
+      <div class="bar-chart" id="bar-chart"></div>
+      <p class="total-votes" id="total-votes"></p>
+      <div class="controls">
+        <button class="btn btn-warning" onclick="revealAnswer()">Reveal Answer</button>
+        <button class="btn btn-success" onclick="nextQuestion()">Next Question</button>
+      </div>
+    </div>
+
+    <div class="leaderboard" id="leaderboard">
+      <h2>Final Leaderboard</h2>
+      <div class="lb-table" id="lb-table"></div>
+      <button class="btn btn-primary" onclick="location.href='/'" style="margin-top:24px;">Back Home</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  let sessionCode = null;
+  let currentQuestions = [];
+  let questionCount = 0;
+
+  // ---- Default sample questions ----
+  const sampleQuestions = [
+    {
+      text: "Which AWS service is used for object storage?",
+      options: ["EC2", "S3", "RDS", "Lambda"],
+      correctIndex: 1
+    },
+    {
+      text: "What does 'elasticity' mean in cloud computing?",
+      options: [
+        "Data is encrypted",
+        "Resources scale with demand",
+        "Servers never go down",
+        "Storage is unlimited"
+      ],
+      correctIndex: 1
+    },
+    {
+      text: "Which of these is a NoSQL database service on AWS?",
+      options: ["Aurora", "DynamoDB", "Redshift", "RDS"],
+      correctIndex: 1
+    }
+  ];
+
+  // ---- Initialize with sample questions ----
+  window.addEventListener('DOMContentLoaded', () => {
+    sampleQuestions.forEach(q => addQuestion(q));
+  });
+
+  function addQuestion(prefill) {
+    questionCount++;
+    const n = questionCount;
+    const block = document.createElement('div');
+    block.className = 'question-block';
+    block.id = `q-block-${n}`;
+    block.innerHTML = `
+      <h3>Question ${n}
+        <span style="float:right;cursor:pointer;color:#888;font-size:0.8rem;" onclick="this.closest('.question-block').remove()">remove</span>
+      </h3>
+      <div class="form-group">
+        <input type="text" id="q-text-${n}" placeholder="Enter your question" value="${prefill ? prefill.text : ''}">
+      </div>
+      <p class="correct-label">Options (select the correct answer):</p>
+      <div class="options-grid">
+        ${[0,1,2,3].map(i => `
+          <div class="option-input-wrap">
+            <input type="radio" name="correct-${n}" value="${i}" ${prefill && prefill.correctIndex === i ? 'checked' : ''}>
+            <input type="text" id="q-${n}-opt-${i}" placeholder="Option ${i+1}" value="${prefill && prefill.options[i] ? prefill.options[i] : ''}">
+          </div>
+        `).join('')}
+      </div>
+    `;
+    document.getElementById('questions-container').appendChild(block);
+  }
+
+  function createSession() {
+    const title = document.getElementById('quiz-title').value.trim();
+    const blocks = document.querySelectorAll('.question-block');
+    const questions = [];
+
+    blocks.forEach((block) => {
+      const id = block.id.split('-')[2];
+      const text = document.getElementById(`q-text-${id}`).value.trim();
+      const options = [0,1,2,3].map(i =>
+        document.getElementById(`q-${id}-opt-${i}`).value.trim()
+      );
+      const correctRadio = block.querySelector(`input[name="correct-${id}"]:checked`);
+      const correctIndex = correctRadio ? parseInt(correctRadio.value) : 0;
+
+      if (text && options.every(o => o)) {
+        questions.push({ text, options, correctIndex });
+      }
+    });
+
+    if (!title || questions.length === 0) {
+      alert('Please enter a title and at least one complete question.');
+      return;
+    }
+
+    fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, questions }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      sessionCode = data.code;
+      currentQuestions = data.session.questions;
+
+      // Switch to live view
+      document.getElementById('create-section').style.display = 'none';
+      document.getElementById('live-section').style.display = 'block';
+      document.getElementById('lobby-code').textContent = sessionCode;
+      document.getElementById('header-code').textContent = sessionCode;
+      document.getElementById('session-info').style.display = 'flex';
+      document.getElementById('play-url').textContent =
+        `${location.origin}/play`;
+
+      // Join the socket room as presenter
+      socket.emit('presenter-join', { code: sessionCode });
+    })
+    .catch(err => alert('Error creating session: ' + err.message));
+  }
+
+  function startQuiz() {
+    nextQuestion();
+    document.getElementById('lobby-view').style.display = 'none';
+    document.getElementById('question-display').style.display = 'block';
+  }
+
+  function nextQuestion() {
+    socket.emit('next-question', { code: sessionCode });
+  }
+
+  function revealAnswer() {
+    socket.emit('reveal-answer', { code: sessionCode });
+  }
+
+  // ---- Socket listeners ----
+
+  socket.on('participants-updated', ({ participants, count }) => {
+    document.getElementById('player-count').textContent = `${count} player${count !== 1 ? 's' : ''}`;
+    const list = document.getElementById('participants-list');
+    list.innerHTML = participants.map(p =>
+      `<span class="participant-chip">${p.name}</span>`
+    ).join('');
+  });
+
+  socket.on('question-started', ({ questionIndex, totalQuestions, text, options }) => {
+    document.getElementById('lobby-view').style.display = 'none';
+    document.getElementById('question-display').style.display = 'block';
+    document.getElementById('leaderboard').style.display = 'none';
+
+    document.getElementById('q-number').textContent =
+      `Question ${questionIndex + 1} of ${totalQuestions}`;
+    document.getElementById('q-text').textContent = text;
+    document.getElementById('total-votes').textContent = '0 votes';
+
+    // Build bar chart
+    const chart = document.getElementById('bar-chart');
+    const colors = ['#667eea', '#764ba2', '#e67e22', '#27ae60'];
+    chart.innerHTML = options.map((opt, i) => `
+      <div class="bar-row bar-neutral" id="bar-row-${i}">
+        <div class="bar-label">${opt}</div>
+        <div class="bar-track">
+          <div class="bar-fill" id="bar-fill-${i}" style="width:0%;background:${colors[i % 4]}"></div>
+        </div>
+        <div class="bar-count" id="bar-count-${i}">0</div>
+      </div>
+    `).join('');
+  });
+
+  socket.on('votes-updated', ({ questionIndex, votes, totalVotes }) => {
+    const maxVote = Math.max(...votes, 1);
+    votes.forEach((v, i) => {
+      const pct = (v / maxVote) * 100;
+      const fill = document.getElementById(`bar-fill-${i}`);
+      const count = document.getElementById(`bar-count-${i}`);
+      if (fill) fill.style.width = pct + '%';
+      if (count) count.textContent = v;
+    });
+    document.getElementById('total-votes').textContent = `${totalVotes} vote${totalVotes !== 1 ? 's' : ''}`;
+  });
+
+  socket.on('answer-revealed', ({ questionIndex, correctIndex, votes }) => {
+    votes.forEach((v, i) => {
+      const row = document.getElementById(`bar-row-${i}`);
+      if (!row) return;
+      row.className = 'bar-row ' + (i === correctIndex ? 'bar-correct' : 'bar-wrong');
+      if (i !== correctIndex) {
+        const fill = document.getElementById(`bar-fill-${i}`);
+        if (fill) fill.style.background = '#444';
+      }
+    });
+  });
+
+  socket.on('session-finished', ({ leaderboard }) => {
+    document.getElementById('question-display').style.display = 'none';
+    document.getElementById('leaderboard').style.display = 'block';
+
+    const table = document.getElementById('lb-table');
+    table.innerHTML = leaderboard.map((p, i) => {
+      let cls = '';
+      if (i === 0) cls = 'gold';
+      else if (i === 1) cls = 'silver';
+      else if (i === 2) cls = 'bronze';
+      return `
+        <div class="lb-row ${cls}">
+          <span class="lb-rank">#${p.rank}</span>
+          <span class="lb-name">${p.name}</span>
+          <span class="lb-score">${p.score} pts</span>
+        </div>
+      `;
+    }).join('');
+  });
+
+  socket.on('error-msg', ({ message }) => alert(message));
+</script>
+</body>
+</html>
