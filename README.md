@@ -117,6 +117,12 @@ Do NOT have multiple people editing files directly on the EC2 machine.
 
 ---
 
+## Dependency 
+This is dll for dynamoDB, done for the VM, only run this on your cmd if running localhost
+
+run:
+npm install jsonwebtoken bcryptjs @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb
+
 ## Security group (firewall) rules
 
 | Port | Type       | Source    | Purpose                    |
