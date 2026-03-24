@@ -354,6 +354,11 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+  // Auth check
+  const token = localStorage.getItem('token');
+  const username = localStorage.getItem('username');
+  if (!token) { window.location.href = '/login'; }
+
   const socket = io();
   let sessionCode = null;
   let currentQuestions = [];
@@ -440,7 +445,10 @@
 
     fetch('/api/sessions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token,
+      },
       body: JSON.stringify({ title, questions }),
     })
     .then(r => r.json())
@@ -458,7 +466,7 @@
         `${location.origin}/play`;
 
       // Join the socket room as presenter
-      socket.emit('presenter-join', { code: sessionCode });
+      socket.emit('presenter-join', { code: sessionCode, token });
     })
     .catch(err => alert('Error creating session: ' + err.message));
   }

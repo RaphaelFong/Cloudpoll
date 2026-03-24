@@ -31,8 +31,20 @@
   .subtitle {
     color: #888;
     font-size: 1.1rem;
-    margin-bottom: 48px;
+    margin-bottom: 16px;
   }
+  .user-info {
+    color: #667eea;
+    font-size: 0.95rem;
+    margin-bottom: 32px;
+  }
+  .user-info a {
+    color: #888;
+    text-decoration: none;
+    margin-left: 12px;
+    font-size: 0.85rem;
+  }
+  .user-info a:hover { color: #e74c3c; }
   .cards {
     display: flex;
     gap: 20px;
@@ -77,6 +89,7 @@
 <div class="container">
   <h1>CloudPoll</h1>
   <p class="subtitle">Real-time live polling and quiz platform</p>
+  <p class="user-info" id="user-info"></p>
 
   <div class="cards">
     <a href="/presenter" class="card">
@@ -93,5 +106,23 @@
 
   <p class="footer">CSD3156 Cloud Computing &middot; Team 32</p>
 </div>
+
+<script>
+  const token = localStorage.getItem('token');
+  const username = localStorage.getItem('username');
+
+  if (!token) {
+    window.location.href = '/login';
+  } else {
+    document.getElementById('user-info').innerHTML =
+      `Logged in as <strong>${username}</strong> <a href="#" onclick="logout()">Logout</a>`;
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    window.location.href = '/login';
+  }
+</script>
 </body>
 </html>

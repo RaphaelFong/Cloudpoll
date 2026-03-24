@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudPoll - Register</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f0f23;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card {
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 40px 32px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 32px;
+  }
+  .form-group {
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #aaa;
+    font-size: 0.85rem;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    background: #16162a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 1rem;
+  }
+  .form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: #667eea;
+    color: #fff;
+    margin-top: 8px;
+    transition: opacity 0.2s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .error-msg {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    display: none;
+  }
+  .success-msg {
+    color: #27ae60;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    display: none;
+  }
+  .link {
+    margin-top: 20px;
+    color: #888;
+    font-size: 0.9rem;
+  }
+  .link a {
+    color: #667eea;
+    text-decoration: none;
+  }
+  .link a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>CloudPoll</h1>
+  <p class="subtitle">Create a new account</p>
+
+  <div class="form-group">
+    <label>Username (min 3 characters)</label>
+    <input type="text" id="username" placeholder="Choose a username">
+  </div>
+  <div class="form-group">
+    <label>Password (min 4 characters)</label>
+    <input type="password" id="password" placeholder="Choose a password">
+  </div>
+  <div class="form-group">
+    <label>Confirm Password</label>
+    <input type="password" id="password2" placeholder="Confirm your password">
+  </div>
+
+  <button class="btn" onclick="register()">Create Account</button>
+
+  <p class="error-msg" id="error-msg"></p>
+  <p class="success-msg" id="success-msg"></p>
+
+  <p class="link">Already have an account? <a href="/login">Log in here</a></p>
+</div>
+
+<script>
+  if (localStorage.getItem('token')) {
+    window.location.href = '/';
+  }
+
+  document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') register();
+    });
+  });
+
+  async function register() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const password2 = document.getElementById('password2').value;
+    const errEl = document.getElementById('error-msg');
+    const successEl = document.getElementById('success-msg');
+    errEl.style.display = 'none';
+    successEl.style.display = 'none';
+
+    if (!username || !password) {
+      errEl.textContent = 'Please fill in all fields.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (password !== password2) {
+      errEl.textContent = 'Passwords do not match.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errEl.textContent = data.error || 'Registration failed';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('username', data.username);
+      successEl.textContent = 'Account created! Redirecting...';
+      successEl.style.display = 'block';
+      setTimeout(() => window.location.href = '/', 500);
+    } catch (err) {
+      errEl.textContent = 'Connection error. Please try again.';
+      errEl.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>

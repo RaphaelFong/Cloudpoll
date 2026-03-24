@@ -268,7 +268,7 @@
       <input type="text" id="session-code" class="code-input" placeholder="CODE" maxlength="6">
     </div>
     <div class="form-group">
-      <input type="text" id="player-name" placeholder="Your name">
+      <input type="text" id="player-name" placeholder="Your name" value="" disabled style="opacity:0.6;">
     </div>
     <button class="btn btn-primary" onclick="joinSession()">Join</button>
     <p class="error-msg" id="error-msg"></p>
@@ -304,14 +304,21 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+  // Auth check
+  const token = localStorage.getItem('token');
+  const username = localStorage.getItem('username');
+  if (!token) { window.location.href = '/login'; }
+
   const socket = io();
   let myScore = 0;
-  let myName = '';
+  let myName = username || '';
   let hasVoted = false;
   let currentQIndex = -1;
 
   // Auto-focus code input
   document.getElementById('session-code').focus();
+  // Show logged-in username
+  document.getElementById('player-name').value = username || '';
 
   // Enter key to join
   document.querySelectorAll('#join-view input').forEach(input => {
@@ -330,15 +337,10 @@
       errEl.style.display = 'block';
       return;
     }
-    if (!name) {
-      errEl.textContent = 'Please enter your name.';
-      errEl.style.display = 'block';
-      return;
-    }
 
     errEl.style.display = 'none';
-    myName = name;
-    socket.emit('join-session', { code, name });
+    myName = username;
+    socket.emit('join-session', { code, name: myName, token });
   }
 
   function selectOption(optionIndex) {
